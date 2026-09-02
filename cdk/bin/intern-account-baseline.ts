@@ -3,6 +3,7 @@ import * as cdk from 'aws-cdk-lib/core';
 import { InternAccountBaselineStack } from '../lib/intern-account-baseline-stack';
 import { AwsSolutionsChecks } from 'cdk-nag';
 import { Aspects } from 'aws-cdk-lib';
+const { JanitorStack } = require('../lib/janitor-stack');
 const app = new cdk.App();
 new InternAccountBaselineStack(app, 'InternAccountBaselineStack', {
   /* If you don't specify 'env', this stack will be environment-agnostic.
@@ -19,4 +20,5 @@ new InternAccountBaselineStack(app, 'InternAccountBaselineStack', {
 
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
+new JanitorStack(app, 'JanitorStack');
 Aspects.of(app).add(new AwsSolutionsChecks({ verbose: true }));

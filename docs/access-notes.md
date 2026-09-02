@@ -46,3 +46,34 @@
 - Whether any SCP restricts regions, services, or specific actions in this account — invisible to me
 
 ---
+
+# Task 1.5 — Janitor & Systems Manager Notes
+
+## Minimal Tagging Standard
+
+- **`Owner`**: Identifies the responsible engineer (e.g., `malek`).
+- **`Environment`**: Specifies operational stage (`dev`, `staging`, `prod`).
+- **`TTL`**: Defines automated cleanup expiration policy (`2026-10-01`, `permanent`).
+
+## Systems Manager Prerequisites
+
+1. **SSM Agent**: Active inside the target instance operating system.
+2. **IAM Instance Profile**: Attached EC2 role containing `AmazonSSMManagedInstanceCore`.
+3. **Outbound Network Access**: Unrestricted HTTPS (port 443) outbound connectivity reaching AWS Systems Manager service endpoints.
+
+## Quoted Access Failure Log
+
+\`\`\`
+UnauthorizedOperation: You are not authorized to perform this operation. User: arn:aws:sts::746851697874:assumed-role/JanitorStack-JanitorFunctionServiceRole.../JanitorFunction is not authorized to perform: ec2:DescribeInstances because no identity-based policy allows the ec2:DescribeInstances action
+\`\`\`
+
+## Error Analysis & Scoping Justification
+
+- **Layer Stopped**: IAM Identity-Based Policy layer on the Lambda execution role.
+- **Granted Actions**: `ec2:DescribeInstances` (for tag scanning) and `ec2:StopInstances` (for state management).
+- **Resource Scoping**: Actions require `Resource: '*'` because EC2 describe and state operations do not support resource-level ARN restrictions in IAM policies.
+
+## Denial Mechanics Distinction
+
+- **Implicit Denial**: Default IAM state where an operation is denied simply because no policy statement grants explicit permission ("no identity-based policy allows..."). Resolved by attaching an `Allow` statement.
+- **Explicit Denial**: Occurs when an explicit `"Effect": "Deny"` statement matches the request. An explicit deny overrides all `Allow` statements regardless of evaluation order or policy attachment point.
